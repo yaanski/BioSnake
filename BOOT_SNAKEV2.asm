@@ -185,6 +185,27 @@ game_loop:
     check_apple:
         mov byte [direction], bl
 
+        mov ax, [playerX]
+        cmp ax, [appleX]
+        jne delay_loop
+
+        mov ax, [playerY]
+        cmp ax, [appleY]
+        jne delay_loop
+
+        ; if apple hit, increase snake length
+        inc word [snakeLength]
+        cmp word [snakeLength], WINCOND
+        je game_won
+    ;; if not game won, generate new apple
+    next_apple:
+        ;; RANDOM X POSITION
+        xor ah, ah
+        int 1Ah            ; Timer ticks since midnight in CX:DX
+        mov ax, dx
+        xor dx, dx
+        mov cx, 
+
     ;; delay loop to stop blinking
     delay_loop:
         mov bx, [TIMER]
@@ -199,10 +220,12 @@ game_loop:
 jmp game_loop
 ;; End conditions
 game_won:
+    mov dword [ES:0000], 1F491F57h ; WI
+    mov dword [ES:0004], 1F211F4Eh ; N!
     jmp reset
 game_lost:
     mov dword [ES:0000], 1F4F1F4Ch ; LO
-    mov dword [ES:0000], 1F451F53h ; LO
+    mov dword [ES:0004], 1F451F53h ; SE
 
 reset:
     xor ah, ah
