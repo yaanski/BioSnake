@@ -202,9 +202,37 @@ game_loop:
         ;; RANDOM X POSITION
         xor ah, ah
         int 1Ah            ; Timer ticks since midnight in CX:DX
-        mov ax, dx
-        xor dx, dx
-        mov cx, 
+        mov ax, dx         ; lower half of time ticks
+        xor dx, dx         ; clear out upper half of dividend
+        mov cx, SCREENW
+        div cx
+        mov word [appleX], dx
+
+     ;; RANDOM Y POSITION
+        xor ah, ah
+        int 1Ah            ; Timer ticks since midnight in CX:DX
+        mov ax, dx         ; lower half of time ticks
+        xor dx, dx         ; clear out upper half of dividend
+        mov cx, SCREENH
+        div cx
+        mov word [appleY], dx
+
+    ;; check if apple spawned inside of snake
+    xor bx, bx              ; array index
+    mov cx, [snakeLength]   ; loop counter
+    .check_loop:
+        mov ax, [appleX]
+        cmp ax, [SNAKEXARRAY+bx]
+        jne .increment
+
+        mov ax, [appleY]
+        cmp ax, [SNAKEYARRAY+bx]
+        je next_apple
+
+        .increment:
+            inc bx
+            inc bx
+    loop .check_loop
 
     ;; delay loop to stop blinking
     delay_loop:
