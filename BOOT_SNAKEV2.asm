@@ -129,7 +129,24 @@ game_loop:
 
     ;; 2) Hit part of snake
     cmp word [snakeLength], 1   ; only starting segment
+    je get_player_input
 
+    mov bx, 2                   ; array indexes, start at 2nd array element
+    mov cx, [snakeLength]       ; loop counter
+    check_hit_snake_loop:
+        mov ax, [playerX]
+        cmp ax, [SNAKEXARRAY+bx]
+        jne .increment
+
+        mov ax, [playerY]
+        cmp ax, [SNAKEYARRAY+BX]
+        je game_lost
+
+        .increment:
+            inc bx
+            inc bx
+    loop check_hit_snake_loop
+ 
 
     get_player_input:
         mov bl, [direction]      ; save current direction
@@ -180,6 +197,19 @@ game_loop:
 
 
 jmp game_loop
+;; End conditions
+game_won:
+    jmp reset
+game_lost:
+    mov dword [ES:0000], 1F4F1F4Ch ; LO
+    mov dword [ES:0000], 1F451F53h ; LO
+
+reset:
+    xor ah, ah
+    int 16h
+    
+    jmp 0FFFFh:0000h  ; reset vector, "warm reboot"
+;;  int 19h           ; restarts qemu
 
 ;; BOOTSECTOR PADDING -------------
 times 510 - ($-$$) db 0
