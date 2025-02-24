@@ -23,7 +23,7 @@ RIGHT       equ 3
 playerX:     dw 40
 playerY:     dw 12
 appleX:      dw 16
-appleY:     dw 8
+appleY:      dw 8
 direction:   db 4
 snakeLength: dw 1
 
@@ -111,8 +111,62 @@ game_loop:
         jnz .snake_loop
 
     ;;store updated values to head of snake in arrays
+    mov ax, [playerY]
+    mov word [SNAKEYARRAY], ax
     mov ax, [playerX]
-    mov [SNAKEXARRAY], ax
+    mov word [SNAKEXARRAY], ax
+
+    ;; Loose conditions
+    ;; 1) Hit border of screen
+    cmp word [playerY], -1      ; top of screen
+    je game_lost
+    cmp word [playerY], SCREENH ; bottom of screen
+    je game_lost
+    cmp word [playerX], -1      ; left of screen
+    je game_lost
+    cmp word [playerX], SCREENW ; right of screen
+    je game_lost
+
+    ;; 2) Hit part of snake
+    cmp word [snakeLength], 1   ; only starting segment
+
+
+    get_player_input:
+        mov bl, [direction]      ; save current direction
+
+        mov ah, 1                
+        int 16h                  ; get keyboard status
+        jz check_apple           ; if no key was pressed
+
+        xor ah, ah
+        int 16h                  ; ah = scan code, al = ascii char entered
+
+        cmp al, 'w'
+        je w_pressed
+        cmp al, 's'
+        je s_pressed
+        cmp al, 'a'
+        je a_pressed
+        cmp al, 'd'
+        je d_pressed
+
+        jmp check_apple
+
+        w_pressed:
+            mov bl, UP
+            jmp check_apple
+        s_pressed:
+            mov bl, DOWN
+            jmp check_apple
+        a_pressed:
+            mov bl, LEFT
+            jmp check_apple
+        d_pressed:            ; me, with the e 
+            mov bl, RIGHT
+            
+    ;; did player hit apple
+    check_apple:
+        mov byte [direction], bl
 
     ;; delay loop to stop blinking
     delay_loop:
